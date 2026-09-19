@@ -33,7 +33,7 @@ std::vector <char> password {'2', '5', '8', '0'};
 std::vector <char> armed {'0', '0', '0', '0', '0', '0'};
 
 bool is_armed {false};
-bool is_trigerred {false};
+bool is_triggered {false};
 bool notification_sent {false};
 
 const unsigned long NOTIFICATION_RETRY_MS = 5000UL;
@@ -80,7 +80,7 @@ void setup()
   Wire.begin(sda, scl);
   if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C))
   {
-    Serial.println("OLED baslatilamadi.");
+    Serial.println("OLED initialization failed.");
     while (true)
     {
       delay(100);
@@ -128,7 +128,7 @@ void setup()
   if (WiFi.status() == WL_CONNECTED)
   {
     Serial.println("\nWiFi connected!");
-    printCentered("WiFi cconnected");
+    printCentered("WiFi connected");
   }
   else
   {
@@ -157,7 +157,7 @@ void loop()
           {
             if (v == password)
             {
-              Serial.println("\nAccess  granted!");
+              Serial.println("\nAccess granted!");
               clearScreen();
               printCentered("System disarmed");
               digitalWrite(GREEN_LED, HIGH);
@@ -172,7 +172,7 @@ void loop()
               delay(1250);
               digitalWrite(GREEN_LED, LOW);
               clearScreen();
-              is_trigerred = false;
+              is_triggered = false;
               is_armed = false;
               notification_sent = false;
               v.clear();
@@ -216,7 +216,7 @@ void loop()
             }
             else
             {
-              Serial.println("\nWrong passwword!");
+              Serial.println("\nWrong password!");
               clearScreen();
               printCentered("Wrong password");
               digitalWrite(RED_LED, HIGH);
@@ -280,19 +280,19 @@ void loop()
     }
   digitalWrite(rows[r], HIGH);
   }
-  if (is_armed && digitalRead(PIR_OUT) == HIGH && !is_trigerred)
+  if (is_armed && digitalRead(PIR_OUT) == HIGH && !is_triggered)
   {
-    is_trigerred = true;
+    is_triggered = true;
     lastNotificationAttempt = millis() - NOTIFICATION_RETRY_MS;
     clearScreen();
-    printCentered("System trigerred");
+    printCentered("System triggered");
   }
-  if (is_trigerred)
+  if (is_triggered)
   {
     digitalWrite(BUZZER, HIGH);
     digitalWrite(RED_LED, HIGH);
   }
-  if (is_trigerred && !notification_sent && WiFi.status() == WL_CONNECTED &&
+  if (is_triggered && !notification_sent && WiFi.status() == WL_CONNECTED &&
       millis() - lastNotificationAttempt >= NOTIFICATION_RETRY_MS)
   {
     http.begin(ntfy_url);
